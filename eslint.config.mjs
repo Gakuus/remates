@@ -134,7 +134,7 @@ export default defineConfig([
         {
           patterns: [
             {
-              group: ["next/*", "react", "react/*", "@supabase/*"],
+              group: ["next/*", "react", "react/*", "pg"],
               message:
                 "Los casos de uso no conocen frameworks: usá los puertos de application/ports.",
             },
@@ -152,7 +152,7 @@ export default defineConfig([
         {
           patterns: [
             {
-              group: ["next/*", "react", "react/*", "@supabase/*", "zod"],
+              group: ["next/*", "react", "react/*", "pg", "zod"],
               message: "El dominio es puro: cero dependencias externas.",
             },
           ],

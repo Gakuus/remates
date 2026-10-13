@@ -8,9 +8,10 @@
 #   ./levantar.sh --dev      # modo desarrollo (recarga automática de código)
 #   ./levantar.sh --no-build # usa el build existente (más rápido)
 #
-# Datos: al no haber Supabase configurado, todo vive en memoria del proceso
-# y se reinicia cuando lo apagás. La contraseña del panel está en `.env`
-# (variable ADMIN_PASSWORD).
+# Datos: si `.env` define DATABASE_URL, levanta el contenedor Postgres y
+# aplica migraciones (persistente). Sin DATABASE_URL, todo vive en memoria
+# del proceso y se reinicia cuando lo apagás. La contraseña del panel está
+# en `.env` (variable ADMIN_PASSWORD).
 
 set -euo pipefail
 

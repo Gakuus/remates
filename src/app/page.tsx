@@ -307,7 +307,7 @@ function Unavailable() {
     <div className="rounded-mas border-arena bg-crema-50 border border-dashed px-6 py-12 text-center">
       <p className="font-display text-monte-950 text-lg">Contenido en carga</p>
       <p className="text-gris-calido-600 mt-1.5 text-sm">
-        Revisá la configuración de Supabase en <code>.env</code> para ver los campos.
+        Revisá la configuración de la base de datos (<code>DATABASE_URL</code>) para ver los campos.
       </p>
     </div>
   );

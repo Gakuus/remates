@@ -37,7 +37,7 @@ next-env.d.ts
 # eslint
 .eslintcache
 
-# uploads locales del panel (modo sin Supabase; se sirven vía /uploads/*)
+# uploads locales del panel (storage de imágenes; se sirven vía /uploads/*)
 /.uploads/
 
 # editor

@@ -30,8 +30,8 @@ import {
 /**
  * Adaptadores en memoria (modo sin backend): responden al instante y sin
  * red, y retienen lo creado/guardado durante la vida del proceso — útil
- * para demo local y para tests. Se usa cuando no hay Supabase configurado
- * (`isSupabaseConfigured()`).
+ * para demo local y para tests. Se usa cuando no hay `DATABASE_URL`
+ * (`isPostgresConfigured()`).
  */
 export class InMemoryPropertyRepository implements PropertyRepository {
   private readonly byId = new Map<string, Property>();

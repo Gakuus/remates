@@ -121,7 +121,7 @@ describe("createInquiryController", () => {
 
   it("nunca filtra errores de infraestructura al cliente", async () => {
     const { handle } = makeController(async () => {
-      throw new Error("supabase caído: conexión rechazada");
+      throw new Error("base de datos caída: conexión rechazada");
     });
 
     const result = await handle({ body: VALID_BODY, ip: "7.7.7.7" });

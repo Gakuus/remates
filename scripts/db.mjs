@@ -14,8 +14,8 @@ import { fileURLToPath } from "node:url";
 import pg from "pg";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const migrationsDir = path.join(root, "supabase", "migrations");
-const seedFile = path.join(root, "supabase", "seed.sql");
+const migrationsDir = path.join(root, "db", "migrations");
+const seedFile = path.join(root, "db", "seed.sql");
 
 const help = `Uso:
   node scripts/db.mjs migrate   (aplica migraciones + seed)
@@ -23,7 +23,11 @@ const help = `Uso:
   node scripts/db.mjs reset     (vacía las tablas de contenido)
 `;
 
-/** Preludio local: el schema Supabase no existe en Postgres puro. */
+/**
+ * Preludio local: las políticas RLS de las migraciones referencian
+ * `auth.jwt()`. En Postgres puro ese schema no existe, así que se stubea.
+ * La app conecta como owner de las tablas y no evalúa RLS.
+ */
 const preludeSql = `
   create schema if not exists auth;
   create or replace function auth.jwt()

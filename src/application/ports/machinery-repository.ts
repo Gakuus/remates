@@ -26,7 +26,7 @@ export interface MachinerySearchResult {
 
 /**
  * Puerto de persistencia de maquinaria (PLAN §2, Sprint 8).
- * Implementado por `SupabaseMachineryRepository` y `InMemoryMachineryRepository`.
+ * Implementado por `PostgresMachineryRepository` e `InMemoryMachineryRepository`.
  */
 export interface MachineryRepository {
   create(item: MachineryItem): Promise<MachineryItem>;

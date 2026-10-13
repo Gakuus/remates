@@ -8,31 +8,27 @@
 Validadas en arranque por `src/infrastructure/config/env.ts` (Zod). Un valor
 inválido **impide arrancar**; un string vacío se trata como ausente.
 
-| Variable                        | ¿Secreta? | Uso                                                                                                                                                      |
-| ------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`                  | **sí**    | Postgres real (`postgres://…` o `postgresql://…`). Con `DATABASE_URL` el sitio usa los adaptadores `Postgres*Repository` (prioridad máxima)              |
-| `NEXT_PUBLIC_SUPABASE_URL`      | no        | API de Supabase (cliente anónimo)                                                                                                                        |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | no        | clave pública; protegida por RLS                                                                                                                         |
-| `SUPABASE_SERVICE_ROLE_KEY`     | **sí**    | solo servidor: `inquiries` y escrituras. Nunca con prefijo `NEXT_PUBLIC_`, nunca en el bundle                                                            |
-| `NEXT_PUBLIC_SITE_URL`          | no        | canonical, sitemap, OG (ej. `https://camposdeluruguay.uy`)                                                                                               |
-| `NEXT_PUBLIC_SITE_NAME`         | no        | nombre del sitio en metadata                                                                                                                             |
-| `NEXT_PUBLIC_WHATSAPP_NUMBER`   | no        | opcional; formato internacional `59899123456`                                                                                                            |
-| `ADMIN_PASSWORD`                | **sí**    | **solo servidor**: contraseña maestra del panel `/admin`. Sin prefijo `NEXT_PUBLIC_`. Si falta, el panel queda bloqueado (login muestra aviso, APIs 503) |
+| Variable                      | ¿Secreta? | Uso                                                                                                                                                      |
+| ----------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                | **sí**    | Postgres real (`postgres://…` o `postgresql://…`). Es el modo de producción: con `DATABASE_URL` el sitio usa los adaptadores `Postgres*Repository`       |
+| `NEXT_PUBLIC_SITE_URL`        | no        | canonical, sitemap, OG (ej. `https://camposdeluruguay.uy`)                                                                                               |
+| `NEXT_PUBLIC_SITE_NAME`       | no        | nombre del sitio en metadata                                                                                                                             |
+| `NEXT_PUBLIC_WHATSAPP_NUMBER` | no        | opcional; formato internacional `59899123456`                                                                                                            |
+| `ADMIN_PASSWORD`              | **sí**    | **solo servidor**: contraseña maestra del panel `/admin`. Sin prefijo `NEXT_PUBLIC_`. Si falta, el panel queda bloqueado (login muestra aviso, APIs 503) |
 
-- **Orden de prioridad** (ver `src/platform/container.ts`): Postgres
-  (`DATABASE_URL`) → Supabase (`NEXT_PUBLIC_SUPABASE_URL`) → memoria.
-- Si **no** hay `DATABASE_URL` ni Supabase, el sitio corre en modo demo: los
-  datos viven en memoria del proceso (`InMemory*Repository`) y se reinician al
-  reiniciar. Para un panel persistente, configurá Postgres o Supabase.
+- **Modos** (ver `src/platform/container.ts`): con `DATABASE_URL` → adaptadores
+  Postgres (producción); sin ella → adaptadores en memoria (demo; los datos se
+  reinician con el proceso).
+- Las imágenes se guardan en el disco local del servidor (`.uploads`), servidas
+  por `/uploads/...`. Necesitás **disco persistente** o un volumen montado.
 
 - Plantilla: `.env.example` → copiar a `.env`.
-- Regla: nada de `.env*` en git (`.gitignore` ya lo excluye). Auditoría: `npm run build` +
-  grep del bundle por fragmentos de la service role.
-- Rotar claves si se filtraron; Rotación en Supabase → Project Settings → API.
+- Regla: nada de `.env*` en git (`.gitignore` ya lo excluye).
+- Rotar la contraseña de la base y `ADMIN_PASSWORD` si se filtraron.
 
 ## 2. Base de datos local (Postgres en Docker)
 
-Para desarrollo y self-hosting persistente, sin necesidad de Supabase:
+Para desarrollo y self-hosting persistente:
 
 1. Levantar la BD + aplicar migraciones y seed:
    `npm run db:up` (o `npm run db:migrate` si el contenedor ya corre).
@@ -40,36 +36,39 @@ Para desarrollo y self-hosting persistente, sin necesidad de Supabase:
    (recrea de cero), `npm run db:down`.
 3. `bash levantar.sh` detecta `DATABASE_URL` en `.env` y orquesta todo:
    `docker-compose up -d`, espera el healthcheck y corre `npm run db:migrate`.
-4. Migraciones versionadas en `supabase/migrations/*.sql`; el runner local
-   (`scripts/db.mjs`) ejecuta un preludio que crea el schema `auth` y un stub
-   de `auth.jwt()` (que en producción provee Supabase) antes de las migraciones.
+4. Migraciones versionadas en `db/migrations/*.sql`; el runner
+   (`scripts/db.mjs`) crea el schema `auth` y un stub de `auth.jwt()` antes de
+   aplicar las migraciones (las políticas RLS los referencian).
 5. La fuente de verdad del esquema son las migraciones; el contenedor vive en
    el puerto host 5433 por defecto (`docker-compose.yml`, variable
    `POSTGRES_PORT`).
 
-## 3. Supabase
+## 3. Postgres en producción
 
-1. Crear proyecto (región más cercana a Uruguay: `us-east-1`).
-2. Aplicar migraciones en orden:
-   `supabase/migrations/0001_initial_schema.sql` (Schema Editor o CLI).
-3. Aplicar `supabase/seed.sql`: **solo catálogos** (departments, property_types,
-   publication_statuses, feature catalog). No inserta propiedades de demo.
-4. Storage: crear bucket público `property-images`; límite de tamaño
-   8 MB y tipos `jpeg/png/webp/avif` (reglas en `domain/rules/image-rules.ts`).
-5. RLS (`properties`, `property_features`, `property_photos`, `inquiries`,
-   catálogos): lectura anónima solo de `published` + features de publicadas;
-   inserts a `inquiries` **desde servidor** con service role (el cliente no
-   tiene política de escritura). Verificar en el SQL Editor con la anon key:
-   `select` debe ver solo publicadas y `insert` debe denegarse.
-6. Copias de vida: backups automáticos diarios (plan de pago) + export
-   puntual antes de cada migración.
+1. Aprovisionar un Postgres gestionado (o self-hosted) con **disco
+   persistente**; obtener la cadena de conexión para `DATABASE_URL`.
+2. Aplicar migraciones + seed: `npm run db:migrate` (con `DATABASE_URL` de
+   producción en el entorno). El seed carga **solo catálogos** (departments,
+   property_types, publication_statuses, feature catalog).
+3. Las migraciones definen políticas RLS por defensa en profundidad. La app
+   conecta como owner de las tablas (las bypassa); si en el futuro agregás un
+   rol de solo lectura, las políticas siguen vigentes.
+4. Imágenes: el storage es el disco local del servidor (`.uploads`). Montá un
+   **volumen persistente** que sobreviva a los deploys. En un entorno
+   serverless efímero (p. ej. Vercel) este storage no sirve: usá un VPS o
+   reemplazá `LocalImageStorage` por un adaptador S3-compatible.
+5. Copias de vida: backups automáticos diarios + export puntual antes de cada
+   migración.
 
 ## 4. Vercel
 
 1. Import del repo (framework: Next.js, auto-detectado).
-2. Settings → Environment Variables: agregar las de la tabla, por entorno
-   (`Production` mínimo; `Preview` puede usar un proyecto Supabase separado o
-   el mismo con lectura). No olvidar `ADMIN_PASSWORD` con una contraseña fuerte.
+2. Settings → Environment Variables: `DATABASE_URL`, `NEXT_PUBLIC_SITE_URL`,
+   `ADMIN_PASSWORD` (fuerte), opcional `NEXT_PUBLIC_WHATSAPP_NUMBER`. Configurá
+   `Production` (y `Preview` con una base de lectura si querés).
+   **Aviso**: Vercel usa filesystem efímero, incompatible con el storage local
+   de imágenes. Para Vercel necesitás un adaptador S3-compatible; con storage
+   local, desplegá en un VPS con volumen persistente (ver §3).
 3. Build & Development Settings: `npm run build` por defecto, Node 24.
 4. `next.config.ts` ya envía `Content-Security-Policy`,
    `Strict-Transport-Security`, `X-Frame-Options`, `Referrer-Policy` y
@@ -112,18 +111,15 @@ placeholder). Merge sin checks rojos = deploy automático en Vercel.
 - Sentry (o Vercel Observability) + alerta de 5xx y de fallos de `/api/inquiries`.
 - Log del servidor para `console.error("[inquiries] …")` (fallo de guardado).
 - Rollback: Vercel → Deployments → promote el anterior; si hubo migración,
-  restaurar backup de Supabase y re-desplegar el commit asociado.
+  restaurar el backup de Postgres y re-desplegar el commit asociado.
 - Checkpoint antes de cada release: `npm run lint && npm run typecheck &&
 npm test && npm run format:check && npm run build`.
 
 ## 9. Pendientes explícitos (post-MVP)
 
-- Los adaptadores Postgres sincronizan `*_images`, características y lotes al
-  actualizar. En los repos Supabase las filas hijas aún no se upsertan al
-  adjuntar foto desde el panel (la foto ya se muestra igual porque se guardan
-  los `main_image_*` denormalizados).
 - Email/WhatsApp reales en `ContactChannel` (hoy WhatsApp solo arma el link).
-- Inquiries visibles en una vista admin.
+- Storage de objetos S3-compatible (para desplegar sin disco persistente).
+- Contenido definitivo de la página `/nosotros` y foto del hero del inicio.
 - Lighthouse con navegador real (no ejecutable sin red).
 
 > Fotos del panel: ver `docs/ARQUITECTURA.md` (flujo upload → attach) y

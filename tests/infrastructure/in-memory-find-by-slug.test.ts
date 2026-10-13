@@ -85,7 +85,7 @@ function makeMachinery(status: "publicado" | "borrador") {
   });
 }
 
-describe("findBySlug público oculta borradores (consistencia con Supabase)", () => {
+describe("findBySlug público oculta borradores (contrato del repositorio)", () => {
   it("property: devuelve el publicado y oculta el borrador", async () => {
     const repo = new InMemoryPropertyRepository();
     await repo.create(makeProperty("borrador"));

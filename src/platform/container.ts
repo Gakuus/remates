@@ -45,15 +45,6 @@ import {
   createUpdateMachinery,
   createChangeMachineryStatus,
 } from "@/application/use-cases/machinery-lifecycle";
-import { SupabasePropertyRepository } from "@/adapters/persistence/supabase-property-repository";
-import {
-  createCatalogIdLookup,
-  createMachineryCategoryIdLookup,
-  SupabaseCatalogRepository,
-} from "@/adapters/persistence/supabase-catalog-repository";
-import { SupabaseInquiryRepository } from "@/adapters/persistence/supabase-inquiry-repository";
-import { SupabaseAuctionRepository } from "@/adapters/persistence/supabase-auction-repository";
-import { SupabaseMachineryRepository } from "@/adapters/persistence/supabase-machinery-repository";
 import { PostgresPropertyRepository } from "@/adapters/persistence/postgres-property-repository";
 import { PostgresAuctionRepository } from "@/adapters/persistence/postgres-auction-repository";
 import { PostgresMachineryRepository } from "@/adapters/persistence/postgres-machinery-repository";
@@ -66,45 +57,31 @@ import {
   InMemoryCatalogRepository,
   InMemoryInquiryRepository,
 } from "@/adapters/persistence/in-memory-repositories";
-import { SupabaseImageStorage } from "@/adapters/storage/supabase-image-storage";
 import { LocalImageStorage } from "@/adapters/storage/local-image-storage";
+import type { ImageStorage } from "@/application/ports/image-storage";
 import { NoopMapProvider } from "@/adapters/map/noop-map-provider";
 import { WhatsAppContactChannel } from "@/adapters/contact/whatsapp-contact-channel";
 import { systemClock, cryptoIdGenerator } from "@/infrastructure/system";
-import { envPublic, isPostgresConfigured, isSupabaseConfigured } from "@/infrastructure/config/env";
-
-const lookupCatalogId = createCatalogIdLookup();
-const lookupMachineryCategoryId = createMachineryCategoryIdLookup();
+import { envPublic, isPostgresConfigured } from "@/infrastructure/config/env";
 
 const usePostgres = isPostgresConfigured();
-const useSupabase = isSupabaseConfigured() && !usePostgres;
 
 const propertyRepository = usePostgres
   ? new PostgresPropertyRepository()
-  : useSupabase
-    ? new SupabasePropertyRepository(lookupCatalogId)
-    : new InMemoryPropertyRepository();
+  : new InMemoryPropertyRepository();
 const auctionRepository = usePostgres
   ? new PostgresAuctionRepository()
-  : useSupabase
-    ? new SupabaseAuctionRepository(lookupCatalogId)
-    : new InMemoryAuctionRepository();
+  : new InMemoryAuctionRepository();
 const machineryRepository = usePostgres
   ? new PostgresMachineryRepository()
-  : useSupabase
-    ? new SupabaseMachineryRepository(lookupCatalogId, lookupMachineryCategoryId)
-    : new InMemoryMachineryRepository();
+  : new InMemoryMachineryRepository();
 const catalogRepository = usePostgres
   ? new PostgresCatalogRepository()
-  : useSupabase
-    ? new SupabaseCatalogRepository()
-    : new InMemoryCatalogRepository();
+  : new InMemoryCatalogRepository();
 const inquiryRepository = usePostgres
   ? new PostgresInquiryRepository()
-  : useSupabase
-    ? new SupabaseInquiryRepository()
-    : new InMemoryInquiryRepository();
-const imageStorage = useSupabase ? new SupabaseImageStorage() : new LocalImageStorage();
+  : new InMemoryInquiryRepository();
+const imageStorage: ImageStorage = new LocalImageStorage();
 const mapProvider = new NoopMapProvider();
 const whatsappChannel = new WhatsAppContactChannel(envPublic.NEXT_PUBLIC_WHATSAPP_NUMBER);
 

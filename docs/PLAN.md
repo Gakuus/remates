@@ -4,6 +4,13 @@
 > **Propósito de este documento:** dejar el proyecto planificado para pasar a implementación sin rediseñar la arquitectura.
 > **Regla de esta etapa:** no se escribe código de la aplicación, no se crean tablas, componentes ni lógica de negocio.
 
+> **Nota de vigencia (post-planificación).** Este documento refleja las
+> decisiones originales de la etapa de planificación. En la implementación se
+> reemplazó **Supabase por un Postgres directo** (driver `pg`): las secciones
+> que mencionan Supabase (p. ej. §12, RLS, storage) se conservan como registro
+> histórico del razonamiento. Las fuentes operativas y actualizadas son
+> [`ARQUITECTURA.md`](./ARQUITECTURA.md) y [`DEPLOY.md`](./DEPLOY.md).
+
 ---
 
 ## Índice

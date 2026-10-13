@@ -3,17 +3,6 @@ import { fileURLToPath } from "node:url";
 
 const isDev = process.env.NODE_ENV === "development";
 
-/** Origen de Supabase para `connect-src` (si está configurado). */
-function supabaseOrigin(): string {
-  const raw = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!raw) return "";
-  try {
-    return new URL(raw).origin;
-  } catch {
-    return "";
-  }
-}
-
 /**
  * CSP (PLAN §15, Sprint 7).
  *
@@ -28,7 +17,7 @@ function supabaseOrigin(): string {
  */
 function contentSecurityPolicy(): string {
   const scriptSrc = isDev ? "'self' 'unsafe-inline' 'unsafe-eval'" : "'self' 'unsafe-inline'";
-  const connect = ["'self'", supabaseOrigin()].filter(Boolean).join(" ");
+  const connect = "'self'";
 
   const directives = [
     "default-src 'self'",
@@ -66,18 +55,6 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   images: {
     formats: ["image/avif", "image/webp"],
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "**.supabase.co",
-        pathname: "/storage/v1/object/public/**",
-      },
-      {
-        protocol: "https",
-        hostname: "**.supabase.in",
-        pathname: "/storage/v1/object/public/**",
-      },
-    ],
   },
   async headers() {
     return [

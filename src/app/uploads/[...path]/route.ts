@@ -4,7 +4,7 @@ import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
- * Sirve las imágenes locales subidas desde el panel (modo sin Supabase).
+ * Sirve las imágenes locales subidas desde el panel.
  *
  * `next start` no sirve archivos agregados a `public/` después del build,
  * así que las fotos viven en `.uploads` y se exponen por esta ruta pública

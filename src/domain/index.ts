@@ -1,6 +1,6 @@
 /**
  * Dominio — núcleo puro del sistema (docs/PLAN.md §2).
- * Cero dependencias externas: ni React, ni Next, ni Supabase.
+ * Cero dependencias externas: ni React, ni Next, ni base de datos.
  */
 
 // Enums / catálogos

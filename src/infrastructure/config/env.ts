@@ -6,19 +6,12 @@ const optionalString = z.preprocess(
   z.string().min(1).optional(),
 );
 
-const optionalUrl = z.preprocess(
-  (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
-  z.url().optional(),
-);
-
 /**
  * Esquema de variables de entorno (docs/PLAN.md §15).
  * Se valida una única vez en el servidor. Las claves privadas jamás
  * llevan prefijo NEXT_PUBLIC_ (nunca llegan al bundle del cliente).
  */
 const publicEnvSchema = z.object({
-  NEXT_PUBLIC_SUPABASE_URL: optionalUrl,
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: optionalString,
   NEXT_PUBLIC_SITE_URL: z.preprocess(
     (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
     z.url().optional(),
@@ -28,7 +21,6 @@ const publicEnvSchema = z.object({
 });
 
 const serverEnvSchema = z.object({
-  SUPABASE_SERVICE_ROLE_KEY: optionalString,
   ADMIN_PASSWORD: optionalString,
   DATABASE_URL: optionalString,
 });
@@ -65,23 +57,6 @@ export const envServer = env.server;
 /** URL pública del sitio (para canonical, sitemap, OG). */
 export const siteUrl = env.public.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 export const siteName = env.public.NEXT_PUBLIC_SITE_NAME ?? "Campos del Uruguay";
-
-/** ¿Hay un Supabase real configurado? Rechaza placeholders y hosts
- * sospechosos. Cuando es `false`, el container usa adaptadores en memoria
- * (respuesta inmediata, sin red) en lugar de pegarle a una URL inválida y
- * esperar el timeout de red en cada SSR.
- */
-export function isSupabaseConfigured(): boolean {
-  const url = env.public.NEXT_PUBLIC_SUPABASE_URL;
-  if (!url) return false;
-  if (/tu-proyecto|tuproyecto|placeholder|example\.com/i.test(url)) return false;
-
-  try {
-    return new URL(url).hostname.endsWith(".supabase.co");
-  } catch {
-    return false;
-  }
-}
 
 /**
  * ¿Hay Postgres local configurado? Cuando `DATABASE_URL` está presente, el

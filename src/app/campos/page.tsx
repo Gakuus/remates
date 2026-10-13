@@ -75,7 +75,7 @@ export default async function CatalogPage({ searchParams }: Props) {
             <div className="rounded-mas border-arena bg-crema-50 border border-dashed px-6 py-16 text-center">
               <p className="font-display text-monte-950 text-xl">El catálogo no está disponible</p>
               <p className="text-gris-calido-600 mt-2 text-sm">
-                Revisá la configuración de Supabase en <code>.env</code>.
+                Revisá la configuración de la base de datos (<code>DATABASE_URL</code>).
               </p>
             </div>
           ) : (

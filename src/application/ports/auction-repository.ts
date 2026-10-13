@@ -24,7 +24,7 @@ export interface AuctionSearchResult {
 
 /**
  * Puerto de persistencia de remates (PLAN §2, Sprint 8).
- * Implementado por `SupabaseAuctionRepository` y `InMemoryAuctionRepository`.
+ * Implementado por `PostgresAuctionRepository` e `InMemoryAuctionRepository`.
  */
 export interface AuctionRepository {
   create(auction: Auction): Promise<Auction>;

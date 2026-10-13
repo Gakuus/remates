@@ -6,7 +6,7 @@ import type { ImageStorage, UploadedObject } from "@/application/ports/image-sto
 const UPLOADS_DIR = path.resolve(process.cwd(), ".uploads");
 
 /**
- * Adaptador de storage local (modo sin Supabase / demo).
+ * Adaptador de storage local (único backend de imágenes del proyecto).
  *
  * Escribe las imágenes en `.uploads` (fuera de `public/`: `next start` no
  * sirve archivos agregados a `public` en runtime). La URL pública

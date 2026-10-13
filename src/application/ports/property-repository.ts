@@ -41,7 +41,7 @@ export interface SearchResult {
 
 /**
  * Puerto de persistencia de campos (PLAN §2).
- * Implementado por `SupabasePropertyRepository` (adaptadores/persistence).
+ * Implementado por `PostgresPropertyRepository` e `InMemoryPropertyRepository`.
  */
 export interface PropertyRepository {
   create(property: Property): Promise<Property>;

@@ -6,8 +6,8 @@ import type { InquirySubject } from "@/domain/entities/inquiry";
 
 /**
  * POST /api/inquiries — consulta de contacto (PLAN §8.7, §16).
- * Escritura desde el servidor con service role; el cliente jamás toca
- * Supabase para esto (PLAN §15).
+ * Escritura desde el servidor (pool Postgres); el cliente jamás toca la
+ * base de datos para esto (PLAN §15).
  */
 const RATE = { limit: 3, windowMs: 10 * 60 * 1000 };
 

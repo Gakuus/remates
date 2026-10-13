@@ -6,7 +6,7 @@ export interface UploadedObject {
 
 /**
  * Puerto de almacenamiento de imágenes (PLAN §2).
- * Implementado por `SupabaseImageStorage`.
+ * Implementado por `LocalImageStorage`.
  */
 export interface ImageStorage {
   /**
