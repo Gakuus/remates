@@ -1,0 +1,23 @@
+services:
+  db:
+    image: postgres:16
+    container_name: remates-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-remates}
+      POSTGRES_USER: ${POSTGRES_USER:-remates}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-remates}
+    ports:
+      # Solo loopback: la base no debe quedar expuesta a la red local.
+      # 5432 suele estar ocupado por otros proyectos locales: usamos 5433.
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - remates-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-remates} -d ${POSTGRES_DB:-remates}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  remates-pgdata:
