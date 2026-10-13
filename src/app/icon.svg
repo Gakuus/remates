@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Campos del Uruguay">
+  <rect width="64" height="64" rx="12" fill="#2f4a3c" />
+  <path d="M8 46 L24 26 L36 40 L46 30 L56 46 Z" fill="#d9cba9" />
+  <path d="M8 46 h48 v4 H8 z" fill="#6b7a4f" />
+  <circle cx="46" cy="17" r="6" fill="#f6f1e7" />
+</svg>
